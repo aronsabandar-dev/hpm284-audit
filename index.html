@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HPM284 Audit Checker</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- LOGIN SCREEN -->
+  <div id="screen-login" class="screen active">
+    <div class="login-bg">
+      <div class="grid-overlay"></div>
+      <div class="glow-orb orb1"></div>
+      <div class="glow-orb orb2"></div>
+    </div>
+    <div class="login-container">
+      <div class="login-logo">
+        <div class="logo-icon">
+          <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+            <path d="M18 3L33 10.5V25.5L18 33L3 25.5V10.5L18 3Z" stroke="#00d4ff" stroke-width="1.5" fill="none"/>
+            <path d="M18 3L33 10.5V25.5L18 33L3 25.5V10.5L18 3Z" stroke="#00d4ff" stroke-width="0.5" fill="rgba(0,212,255,0.05)"/>
+            <circle cx="18" cy="18" r="6" stroke="#00d4ff" stroke-width="1.5" fill="none"/>
+            <circle cx="18" cy="18" r="2" fill="#00d4ff"/>
+          </svg>
+        </div>
+        <div class="logo-text">
+          <span class="logo-main">HPM<span class="logo-accent">284</span></span>
+          <span class="logo-sub">AUDIT SYSTEM</span>
+        </div>
+      </div>
+
+      <div class="login-card">
+        <div class="login-card-header">
+          <span class="login-title">AKSES SISTEM</span>
+          <span class="login-version">v1.0</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">NAMA ANDA</label>
+          <input type="text" id="input-name" class="form-input" placeholder="Ketik nama lengkap..." autocomplete="off" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">PIN AKSES</label>
+          <div class="pin-wrapper">
+            <input type="password" id="input-pin" class="form-input" placeholder="••••••" maxlength="10" autocomplete="off" />
+            <button class="pin-toggle" onclick="togglePin()">
+              <svg id="eye-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div id="login-error" class="login-error hidden">PIN tidak valid. Coba lagi.</div>
+
+        <button class="btn-login" onclick="doLogin()">
+          <span>MASUK</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </button>
+
+        <div class="login-footer">Hypermart 284 · Ambon City Center</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN APP -->
+  <div id="screen-app" class="screen">
+
+    <!-- TOP BAR -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="topbar-logo">HPM<span>284</span></div>
+        <div class="topbar-title">Audit Checker</div>
+      </div>
+      <div class="topbar-right">
+        <div class="user-badge">
+          <div class="user-dot"></div>
+          <span id="topbar-name">-</span>
+        </div>
+        <button class="btn-icon" onclick="showScreen('dashboard')" title="Dashboard">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+            <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+          </svg>
+        </button>
+        <button class="btn-icon" onclick="doLogout()" title="Keluar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- BOTTOM NAV -->
+    <nav class="bottom-nav">
+      <button class="nav-item active" onclick="showScreen('checklist')" id="nav-checklist">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+        </svg>
+        <span>Checklist</span>
+      </button>
+      <button class="nav-item" onclick="showScreen('dashboard')" id="nav-dashboard">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+        </svg>
+        <span>Dashboard</span>
+      </button>
+      <button class="nav-item" onclick="showScreen('log')" id="nav-log">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
+        </svg>
+        <span>Log</span>
+      </button>
+    </nav>
+
+    <!-- CHECKLIST SCREEN -->
+    <div id="view-checklist" class="view active">
+      <div class="view-header">
+        <div class="view-header-top">
+          <div>
+            <div class="view-title">AUDIT CHECKLIST</div>
+            <div class="view-date" id="checklist-date">-</div>
+          </div>
+          <div class="progress-ring-wrap">
+            <svg class="progress-ring" width="56" height="56">
+              <circle class="ring-bg" cx="28" cy="28" r="22" stroke-width="4" fill="none"/>
+              <circle class="ring-fill" id="ring-fill" cx="28" cy="28" r="22" stroke-width="4" fill="none"
+                stroke-dasharray="138.2" stroke-dashoffset="138.2"/>
+            </svg>
+            <span class="ring-pct" id="ring-pct">0%</span>
+          </div>
+        </div>
+
+        <!-- FILTER KATEGORI -->
+        <div class="category-tabs" id="category-tabs"></div>
+      </div>
+
+      <div class="checklist-body" id="checklist-body"></div>
+
+      <!-- SUBMIT BAR -->
+      <div class="submit-bar">
+        <div class="submit-info">
+          <span id="submit-count">0 dari 0 item diisi</span>
+          <div class="offline-badge" id="offline-badge">
+            <div class="offline-dot"></div>
+            <span>Offline</span>
+          </div>
+        </div>
+        <button class="btn-submit" id="btn-submit" onclick="submitChecklist()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+          </svg>
+          KIRIM LAPORAN
+        </button>
+      </div>
+    </div>
+
+    <!-- DASHBOARD SCREEN -->
+    <div id="view-dashboard" class="view">
+      <div class="view-header">
+        <div class="view-title">DASHBOARD</div>
+        <div class="view-date" id="dashboard-date">-</div>
+      </div>
+
+      <div class="dashboard-body" id="dashboard-body">
+        <div class="loading-state">
+          <div class="spinner"></div>
+          <span>Memuat data...</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOG SCREEN -->
+    <div id="view-log" class="view">
+      <div class="view-header">
+        <div class="view-title">LOG AKTIVITAS</div>
+        <div class="view-subtitle">Riwayat akses & pengiriman</div>
+      </div>
+
+      <div class="log-body" id="log-body">
+        <div class="loading-state">
+          <div class="spinner"></div>
+          <span>Memuat log...</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast" class="toast hidden"></div>
+
+  <!-- SUCCESS MODAL -->
+  <div id="modal-success" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-icon success">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+          <polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+      </div>
+      <div class="modal-title">LAPORAN TERKIRIM</div>
+      <div class="modal-desc" id="modal-desc">-</div>
+      <button class="btn-modal" onclick="closeModal()">OK</button>
+    </div>
+  </div>
+
+  <!-- FIREBASE -->
+  <script type="module" src="app.js"></script>
+</body>
+</html>
