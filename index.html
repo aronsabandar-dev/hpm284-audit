@@ -14,6 +14,9 @@
   <meta name="apple-mobile-web-app-title" content="HPM284 Audit" />
   <link rel="apple-touch-icon" href="/icon-192.png" />
   <meta name="theme-color" content="#00d4ff" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
 </head>
 <body>
 
@@ -208,10 +211,16 @@
 
 <script type="module" src="app.js"></script>
 <script>
+  // Force unregister old service workers and register new one
   if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(regs => {
+      regs.forEach(reg => reg.unregister());
+    });
+    // Clear all caches
+    caches.keys().then(keys => keys.forEach(k => caches.delete(k)));
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js')
-        .then(r => console.log('SW registered'))
+      navigator.serviceWorker.register('/sw.js?v=6')
+        .then(r => { r.update(); console.log('SW v6 registered'); })
         .catch(e => console.log('SW error:', e));
     });
   }
