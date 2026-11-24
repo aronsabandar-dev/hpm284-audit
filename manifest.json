@@ -1,14 +1,25 @@
 {
   "name": "HPM284 Audit Checker",
   "short_name": "HPM284 Audit",
-  "description": "Daily Audit Checklist App - Hypermart 284 Ambon",
+  "description": "Daily Audit Checklist App - Hypermart 284 Ambon City Center",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#080c14",
   "theme_color": "#00d4ff",
   "orientation": "portrait",
+  "scope": "/",
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
   ]
 }

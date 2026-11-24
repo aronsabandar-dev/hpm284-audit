@@ -389,3 +389,40 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 .empty-state { text-align: center; padding: 60px 20px; color: var(--text3); font-size: 13px; }
 
 .hidden { display: none !important; }
+
+/* ===== TAMBAHAN 2026 ===== */
+.section-pts { font-size: 10px; color: var(--accent); font-family: 'JetBrains Mono', monospace; margin-left: 6px; }
+
+.item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+.item-label { font-size: 10px; font-weight: 600; color: var(--text3); letter-spacing: 1px; font-family: 'JetBrains Mono', monospace; }
+.item-points { font-size: 11px; font-weight: 700; color: var(--accent); font-family: 'JetBrains Mono', monospace; background: var(--accent-glow); padding: 2px 7px; border-radius: 10px; border: 1px solid var(--border2); }
+.item-desc { font-size: 13px; color: var(--text2); line-height: 1.5; margin-bottom: 6px; }
+.item-notes { font-size: 11px; color: var(--text3); line-height: 1.5; background: rgba(255,255,255,0.02); border-left: 2px solid var(--border2); padding: 6px 10px; border-radius: 0 6px 6px 0; margin-top: 4px; }
+.notes-icon { margin-right: 4px; }
+.item-updater { font-size: 10px; color: var(--green); margin-top: 5px; font-family: 'JetBrains Mono', monospace; }
+
+.btn-fs-link { margin-top: 8px; padding: 7px 12px; background: rgba(0,212,255,0.08); border: 1px solid var(--border2); border-radius: 6px; color: var(--accent); font-size: 12px; cursor: pointer; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.5px; }
+.btn-fs-link:hover { background: rgba(0,212,255,0.15); }
+
+.fs-info-bar { background: rgba(0,212,255,0.05); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; margin-bottom: 12px; font-size: 11px; color: var(--text3); }
+
+/* ===== LOGO HYPERMART ===== */
+.login-logo-img { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: 32px; }
+.hm-logo-login { width: 200px; filter: drop-shadow(0 0 20px rgba(0,180,255,0.3)); }
+.login-store-badge { font-size: 11px; letter-spacing: 2px; color: var(--text3); font-family: 'JetBrains Mono', monospace; border: 1px solid var(--border); padding: 4px 12px; border-radius: 20px; }
+.hm-logo-topbar { height: 28px; filter: brightness(0) invert(1) drop-shadow(0 0 6px rgba(0,212,255,0.4)); }
+
+/* ===== WATERMARK ===== */
+.watermark {
+  position: fixed;
+  bottom: 68px;
+  right: 12px;
+  font-size: 9px;
+  color: rgba(255,255,255,0.08);
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 1px;
+  pointer-events: none;
+  z-index: 1;
+  transform: rotate(-0deg);
+  user-select: none;
+}
