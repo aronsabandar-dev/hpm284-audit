@@ -780,3 +780,172 @@ function showToast(msg, type = '') {
 document.getElementById('checklist-date').textContent = formatDate(new Date());
 updateOnlineStatus();
 startRealtimeSync();
+
+// ===================== SCORING =====================
+function getScoreColor(pct) {
+  if (pct > 75) return { color: 'var(--green)', label: 'AC', bg: 'rgba(0,255,157,0.1)', border: 'rgba(0,255,157,0.3)' };
+  if (pct > 65) return { color: 'var(--yellow)', label: 'NI', bg: 'rgba(255,214,10,0.1)', border: 'rgba(255,214,10,0.3)' };
+  if (pct > 50) return { color: '#ff8800', label: 'SIN', bg: 'rgba(255,136,0,0.1)', border: 'rgba(255,136,0,0.3)' };
+  return { color: 'var(--red)', label: 'WC', bg: 'rgba(255,68,102,0.1)', border: 'rgba(255,68,102,0.3)' };
+}
+
+function calcTotalPoints(saItems, fsItems) {
+  const allSA = AUDIT_CATEGORIES.flatMap(c => c.items);
+  const totalMaxPts = allSA.reduce((s,i) => s + i.points, 0); // 100 pts from SA
+  
+  // Calculate achieved points (OK items only)
+  let achievedPts = 0;
+  allSA.forEach(item => {
+    if (saItems[item.id]?.status === 'ok') achievedPts += item.points;
+  });
+  
+  // Food Safety contribution (10 pts based on % completion)
+  const fsTotal = FOOD_SAFETY_ITEMS.length;
+  const fsOk = FOOD_SAFETY_ITEMS.filter(i => fsItems[i.id]?.status === 'ok').length;
+  const fsPct = fsTotal > 0 ? fsOk / fsTotal : 0;
+  achievedPts += Math.round(10 * fsPct);
+
+  return { achieved: achievedPts, max: totalMaxPts };
+}
+
+// ===================== HISTORY =====================
+async function loadHistory() {
+  const body = document.getElementById('history-body');
+  body.innerHTML = `<div class="loading-state"><div class="spinner"></div><span>Memuat riwayat...</span></div>`;
+
+  try {
+    const { getDocs, collection, query, orderBy, limit } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    
+    // Get last 30 audit docs
+    const auditsRef = collection(db, 'audits');
+    const snap = await getDocs(query(auditsRef, orderBy('date', 'desc'), limit(30)));
+
+    if (snap.empty) {
+      body.innerHTML = `<div class="empty-state">Belum ada riwayat audit.</div>`;
+      return;
+    }
+
+    let html = '';
+    snap.docs.forEach(d => {
+      const data = d.data();
+      const dateId = data.date || d.id;
+      const saItems = data.items || {};
+      const fsItems = data.foodSafety || {};
+      const allSA = AUDIT_CATEGORIES.flatMap(c => c.items);
+
+      // Count items
+      const totalItems = allSA.length + FOOD_SAFETY_ITEMS.length;
+      const filledSA = allSA.filter(i => saItems[i.id]?.status).length;
+      const filledFS = FOOD_SAFETY_ITEMS.filter(i => fsItems[i.id]?.status).length;
+      const filled = filledSA + filledFS;
+      const okCount = allSA.filter(i => saItems[i.id]?.status === 'ok').length + FOOD_SAFETY_ITEMS.filter(i => fsItems[i.id]?.status === 'ok').length;
+      const notOkCount = filled - okCount;
+
+      // Points
+      const { achieved, max } = calcTotalPoints(saItems, fsItems);
+      const pct = max > 0 ? Math.round((achieved / max) * 100) : 0;
+      const score = getScoreColor(pct);
+
+      // Format date
+      const [y, m, day] = dateId.split('-');
+      const dateObj = new Date(y, m-1, day);
+      const dateStr = new Intl.DateTimeFormat('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' }).format(dateObj);
+
+      // Status badge
+      const status = data.status === 'submitted' ? '✓ Terkirim' : '⏳ Draft';
+      const statusColor = data.status === 'submitted' ? 'var(--green)' : 'var(--yellow)';
+      const submittedBy = data.submittedBy || data.lastUpdatedBy || '-';
+
+      html += `
+        <div class="history-card" onclick="toggleHistoryDetail('${dateId}')">
+          <div class="history-card-top">
+            <div class="history-date-wrap">
+              <div class="history-date">${dateStr}</div>
+              <div class="history-meta" style="color:${statusColor}">${status} · ${submittedBy}</div>
+            </div>
+            <div class="score-badge" style="background:${score.bg};border-color:${score.border};color:${score.color}">
+              <div class="score-pct">${pct}%</div>
+              <div class="score-label">${score.label}</div>
+            </div>
+          </div>
+
+          <div class="history-stats">
+            <div class="hstat"><span class="hstat-val">${achieved}/${max}</span><span class="hstat-label">Poin</span></div>
+            <div class="hstat"><span class="hstat-val">${filled}/${totalItems}</span><span class="hstat-label">Item Diisi</span></div>
+            <div class="hstat"><span class="hstat-val ok-text">${okCount}</span><span class="hstat-label">OK ✓</span></div>
+            <div class="hstat"><span class="hstat-val red-text">${notOkCount}</span><span class="hstat-label">Temuan ✗</span></div>
+          </div>
+
+          <div class="score-bar-bg">
+            <div class="score-bar-fill" style="width:${pct}%;background:${score.color}"></div>
+          </div>
+
+          <!-- DETAIL (collapsed) -->
+          <div class="history-detail hidden" id="detail-${dateId}">
+            <div class="detail-divider"></div>
+            ${AUDIT_CATEGORIES.map(cat => {
+              const catOk = cat.items.filter(i => saItems[i.id]?.status === 'ok').length;
+              const catPts = cat.items.filter(i => saItems[i.id]?.status === 'ok').reduce((s,i) => s+i.points, 0);
+              const catMax = cat.items.reduce((s,i) => s+i.points, 0);
+              const catPct = catMax > 0 ? Math.round((catPts/catMax)*100) : 0;
+              const catScore = getScoreColor(catPct);
+              const issues = cat.items.filter(i => saItems[i.id]?.status === 'not_ok');
+              return `
+                <div class="detail-cat">
+                  <div class="detail-cat-top">
+                    <span class="detail-cat-name">${cat.name}</span>
+                    <span class="detail-cat-score" style="color:${catScore.color}">${catPts}/${catMax} pts</span>
+                  </div>
+                  ${issues.length > 0 ? issues.map(item => `
+                    <div class="detail-issue">
+                      <span class="detail-issue-dot">✗</span>
+                      <span class="detail-issue-text">${item.label}: ${item.text.substring(0,80)}${item.text.length>80?'...':''}</span>
+                    </div>
+                    ${saItems[item.id]?.note ? `<div class="detail-issue-note">📝 ${saItems[item.id].note}</div>` : ''}
+                  `).join('') : `<div class="detail-all-ok">✓ Semua poin OK</div>`}
+                </div>`;
+            }).join('')}
+
+            <!-- Food Safety detail -->
+            ${(() => {
+              const fsOk = FOOD_SAFETY_ITEMS.filter(i => fsItems[i.id]?.status === 'ok').length;
+              const fsPct2 = FOOD_SAFETY_ITEMS.length > 0 ? Math.round((fsOk/FOOD_SAFETY_ITEMS.length)*100) : 0;
+              const fsPtsAchieved = Math.round(10 * fsOk / FOOD_SAFETY_ITEMS.length);
+              const fsScore = getScoreColor(fsPct2);
+              const fsIssues = FOOD_SAFETY_ITEMS.filter(i => fsItems[i.id]?.status === 'not_ok');
+              return `
+                <div class="detail-cat">
+                  <div class="detail-cat-top">
+                    <span class="detail-cat-name">🍽 Food Safety</span>
+                    <span class="detail-cat-score" style="color:${fsScore.color}">${fsPtsAchieved}/10 pts</span>
+                  </div>
+                  ${fsIssues.length > 0 ? fsIssues.map(item => `
+                    <div class="detail-issue">
+                      <span class="detail-issue-dot">✗</span>
+                      <span class="detail-issue-text">${item.category}: ${item.text.substring(0,80)}${item.text.length>80?'...':''}</span>
+                    </div>
+                  `).join('') : `<div class="detail-all-ok">✓ Semua poin OK</div>`}
+                </div>`;
+            })()}
+          </div>
+        </div>`;
+    });
+
+    body.innerHTML = html;
+  } catch(e) {
+    console.error(e);
+    body.innerHTML = `<div class="empty-state">Gagal memuat riwayat. Periksa koneksi.</div>`;
+  }
+}
+
+window.toggleHistoryDetail = function(dateId) {
+  const el = document.getElementById(`detail-${dateId}`);
+  if (el) el.classList.toggle('hidden');
+};
+
+// Patch showScreen to handle history
+const _origShowScreen = window.showScreen;
+window.showScreen = function(screen) {
+  _origShowScreen(screen);
+  if (screen === 'history') loadHistory();
+};
