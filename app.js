@@ -896,13 +896,28 @@ async function loadHistory() {
                     <span class="detail-cat-name">${cat.name}</span>
                     <span class="detail-cat-score" style="color:${catScore.color}">${catPts}/${catMax} pts</span>
                   </div>
-                  ${issues.length > 0 ? issues.map(item => `
+                  ${(() => {
+                const catIssues = cat.items.filter(i => saItems[i.id]?.status === 'not_ok');
+                const catOkItems = cat.items.filter(i => saItems[i.id]?.status === 'ok');
+                const catEmpty = cat.items.filter(i => !saItems[i.id]?.status);
+                let catHtml = '';
+                if (catIssues.length > 0) {
+                  catHtml += catIssues.map(item => `
                     <div class="detail-issue">
                       <span class="detail-issue-dot">✗</span>
                       <span class="detail-issue-text">${item.label}: ${item.text.substring(0,80)}${item.text.length>80?'...':''}</span>
                     </div>
                     ${saItems[item.id]?.note ? `<div class="detail-issue-note">📝 ${saItems[item.id].note}</div>` : ''}
-                  `).join('') : `<div class="detail-all-ok">✓ Semua poin OK</div>`}
+                  `).join('');
+                }
+                if (catEmpty.length > 0) {
+                  catHtml += `<div class="detail-empty">⬜ ${catEmpty.length} item belum diisi</div>`;
+                }
+                if (catIssues.length === 0 && catEmpty.length === 0) {
+                  catHtml = `<div class="detail-all-ok">✓ Semua poin OK</div>`;
+                }
+                return catHtml;
+              })()}
                 </div>`;
             }).join('')}
 
@@ -919,12 +934,25 @@ async function loadHistory() {
                     <span class="detail-cat-name">🍽 Food Safety</span>
                     <span class="detail-cat-score" style="color:${fsScore.color}">${fsPtsAchieved}/10 pts</span>
                   </div>
-                  ${fsIssues.length > 0 ? fsIssues.map(item => `
-                    <div class="detail-issue">
-                      <span class="detail-issue-dot">✗</span>
-                      <span class="detail-issue-text">${item.category}: ${item.text.substring(0,80)}${item.text.length>80?'...':''}</span>
-                    </div>
-                  `).join('') : `<div class="detail-all-ok">✓ Semua poin OK</div>`}
+                  ${(() => {
+                    const fsEmpty2 = FOOD_SAFETY_ITEMS.filter(i => !fsItems[i.id]?.status);
+                    let fsHtml = '';
+                    if (fsIssues.length > 0) {
+                      fsHtml += fsIssues.map(item => `
+                        <div class="detail-issue">
+                          <span class="detail-issue-dot">✗</span>
+                          <span class="detail-issue-text">${item.category}: ${item.text.substring(0,80)}${item.text.length>80?'...':''}</span>
+                        </div>
+                      `).join('');
+                    }
+                    if (fsEmpty2.length > 0) {
+                      fsHtml += `<div class="detail-empty">⬜ ${fsEmpty2.length} item belum diisi</div>`;
+                    }
+                    if (fsIssues.length === 0 && fsEmpty2.length === 0) {
+                      fsHtml = `<div class="detail-all-ok">✓ Semua poin OK</div>`;
+                    }
+                    return fsHtml;
+                  })()}
                 </div>`;
             })()}
           </div>

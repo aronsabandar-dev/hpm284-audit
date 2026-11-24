@@ -474,3 +474,24 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 /* ===== TOPBAR LOGO FIX ===== */
 .topbar-left { display: flex; align-items: center; gap: 10px; }
 .hm-logo-topbar { height: 26px; object-fit: contain; filter: drop-shadow(0 0 4px rgba(0,180,255,0.3)); }
+
+/* ===== MOBILE LOGIN FIX ===== */
+@media (max-height: 600px) {
+  .login-logo-img { margin-bottom: 16px; }
+  .hm-logo-login { width: 140px; }
+  .login-card { padding: 20px; }
+}
+
+.login-container {
+  overflow-y: auto !important;
+  padding: 20px 24px 40px !important;
+  justify-content: flex-start !important;
+  padding-top: max(40px, env(safe-area-inset-top, 20px)) !important;
+}
+
+.screen.active {
+  overflow-y: auto;
+}
+
+/* ===== HISTORY EMPTY STATE ===== */
+.detail-empty { font-size: 11px; color: var(--text3); padding: 3px 0; }
